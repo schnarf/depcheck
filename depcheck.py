@@ -4,7 +4,12 @@ import sys
 # depcheck entry point
 def main(argv):
     if len(argv) < 3:
-        sys.exit('Usage: %s source-file include-path' % argv[0])
+        sys.exit(
+        """Usage: %s source-file include-path
+    - source-file is the source code to search for its dependencies.
+    - include-path is a semicolon-delimited list of paths
+      to search for includes, in the order given.
+        """ % argv[0])
     source_file = argv[1]
     include_path_list = argv[2]
 

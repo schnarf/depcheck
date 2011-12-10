@@ -1,0 +1,16 @@
+This is a project to help determine #include dependencies for C and C++
+source code. Ultimately the goal is to help with using lint to do static
+analysis on very large projects, only analyzing things that have changed.
+
+I have chosen not to implement a full preprocessor, as I don't think that
+will be necessary. Instead, this tool will just search for includes,
+regardless of whether they are enabled with some set of defines. This
+will give a superset of what will actually end up being included.
+
+Right now the only working utility is depcheck. It takes a source file
+and a list of semicolon-delimited includes, and prints out the
+fully-qualified paths of the headers it includes.
+
+The code for actually doing the searching and parsing is in dependency.py.
+That file also contains some unit tests, that will be run by
+executing dependency.py
