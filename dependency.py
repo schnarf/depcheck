@@ -56,24 +56,30 @@ def findUserHeaders(source_file_base, cur_path, paths, ignores=set()):
     # Now set the current path to the path of the file we found
     cur_path = os.path.dirname(source_file)
 
-    # Parse user headers, excluding ignored ones
-    user_headers = parseUserHeaders(source).difference(ignores)
+    # Add this header to the list of ignores
+    ignores.add(os.path.abspath(source_file))
+
+    # Parse user headers, search for the fully-qualified
+    # path, and remove ignored ones
+    user_headers = set(map(lambda hdr: searchIncludePath(hdr, cur_path, paths),
+                       parseUserHeaders(source)))
+    user_headers.difference_update(ignores)
 
     # Update the ignores: ignore the ignores that
     # were passed in, as well as the headers we parsed
-    new_ignores = ignores.union(user_headers)
+    # This is because circular inclusions are legal,
+    # but since we don't actually preprocess, this would
+    # lead to an infinite loop.
+    ignores.update(user_headers)
 
-    # Try to load each of the headers, ignoring
-    # the new ignore set so we don't get stuck in a loop
-    # if there are circular includes
-    headers = set()
+    # Now build our list of all headers included by this
+    # file, or by its includes. We start with the
+    # list of headers in this file, and then recursively
+    # add includes
+    headers = user_headers
     for header in user_headers:
-        # Look up the fully-qualified path and store it
-        header_file = searchIncludePath(header, cur_path, paths)
-        headers.add(header_file)
-
-        # Now find the user headers in that file, and add them as well
-        found_headers = findUserHeaders(header, cur_path, paths, new_ignores)
+        # Find the user headers in this included file, and add them as well
+        found_headers = findUserHeaders(header, cur_path, paths, ignores)
         headers.update(found_headers)
 
     return headers
@@ -128,6 +134,14 @@ class TestDependency(unittest.TestCase):
         paths.pop()
         full_path = searchIncludePath(base_file, base_dir, paths)
         self.assertEqual(full_path, None)
+  
+    def test_circular(self):
+        test_dir = 'tests/circular'
+        headers = findUserHeaders('a.h', test_dir, [])
+        expected_path = os.path.abspath(os.path.join(test_dir, 'b.h'))
+        self.assertEqual(headers, set([expected_path]))
+
 
 if __name__ == '__main__':
     unittest.main()
+
