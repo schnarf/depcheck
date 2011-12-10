@@ -7,10 +7,17 @@ will be necessary. Instead, this tool will just search for includes,
 regardless of whether they are enabled with some set of defines. This
 will give a superset of what will actually end up being included.
 
-Right now the only working utility is depcheck. It takes a source file
-and a list of semicolon-delimited includes, and prints out the
-fully-qualified paths of the headers it includes.
-
 The code for actually doing the searching and parsing is in dependency.py.
 That file also contains some unit tests, that will be run by
 executing dependency.py
+
+depcheck.py
+====================
+Takes a source file and a list of semicolon-delimited includes,
+and prints out the fully-qualified paths of the headers it includes.
+
+deptime.py
+====================
+Takes the same input as depcheck.py. The output is the latest
+last-modified date of the file or any of its dependencies.
+
