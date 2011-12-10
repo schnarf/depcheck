@@ -99,5 +99,35 @@ class TestDependency(unittest.TestCase):
         self.assertEqual(system_headers, target_system_headers)
         self.assertEqual(user_headers, target_user_headers)
 
+    def test_search(self):
+        test_dir = 'tests/search_include_paths'
+        # Search for 1.h which is in the base path and all the other paths
+        base_dir = test_dir
+        base_file = '1.h'
+        paths = [os.path.join(test_dir, 'c'),
+            os.path.join(test_dir, 'a'),
+            os.path.join(test_dir, 'b')]
+        full_path = searchIncludePath(base_file, base_dir, paths)
+        expected_path = os.path.abspath('tests/search_include_paths/1.h')
+        self.assertEqual(full_path, expected_path)
+
+        # Search for 2.h which is in all paths but the base path
+        base_file = '2.h'
+        expected_path = os.path.abspath('tests/search_include_paths/c/2.h')
+        full_path = searchIncludePath(base_file, base_dir, paths)
+        self.assertEqual(full_path, expected_path)
+
+        # Search for 3.h which is only in "b"
+        base_file = '3.h'
+        expected_path = os.path.abspath('tests/search_include_paths/b/3.h')
+        full_path = searchIncludePath(base_file, base_dir, paths)
+        self.assertEqual(full_path, expected_path)
+
+        # Remove "b" from the paths, and then search for 3.h
+        # We expect not to find it
+        paths.pop()
+        full_path = searchIncludePath(base_file, base_dir, paths)
+        self.assertEqual(full_path, None)
+
 if __name__ == '__main__':
     unittest.main()
